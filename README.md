@@ -38,7 +38,7 @@
 ### 环境安装 (快速开始)
 ```bash
 # 1. 克隆本仓库
-git clone [https://github.com/your-username/PINN-Heat-Equation.git](https://github.com/your-username/PINN-Heat-Equation.git)
+git clone [https://github.com/lanan0710/PINN-Heat-Equation.git](https://github.com/your-username/PINN-Heat-Equation.git)
 cd PINN-Heat-Equation
 
 # 2. 创建并激活 Conda 虚拟环境
