@@ -1,22 +1,13 @@
-# 设置标准输出编码为 UTF-8，避免 Windows 下 emoji 等字符的编码报错
 import sys
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
-# 导入 DeepXDE 深度学习求解微分方程的核心库
 import deepxde as dde
-# 导入 NumPy 用于数值计算和数组操作
 import numpy as np
-# 导入 time 用于计时训练耗时
 import time
-# 导入 matplotlib 用于绘制实验结果图表
 import matplotlib.pyplot as plt
 
-# 解决 matplotlib 中文显示问题：使用 Windows 自带的中文字体
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'SimSun']
-# 解决负号 '-' 显示为方块的问题
 plt.rcParams['axes.unicode_minus'] = False
-# 提高 matplotlib 画图的清晰度
 plt.rcParams['figure.dpi'] = 300
 
 # ==========================================
@@ -24,11 +15,8 @@ plt.rcParams['figure.dpi'] = 300
 #    (alpha = 0.4 为热扩散系数)
 # ==========================================
 def pde(x, y):
-    # dy_t: y 对 t（x 的第1列，索引 j=1）的一阶偏导
     dy_t = dde.grad.jacobian(y, x, i=0, j=1)
-    # dy_xx: y 对 x（x 的第0列，索引 j=0）的二阶偏导
     dy_xx = dde.grad.hessian(y, x, i=0, j=0)
-    # 返回 PDE 残差: dy_t - 0.4 * dy_xx = 0
     return dy_t - 0.4 * dy_xx
 
 # ==========================================
@@ -109,7 +97,7 @@ y_true = exact_solution(X_test)
 # 每个配点数重复 5 次，让均值更可靠（原为 3 次）
 domain_points_list = [100, 500, 2000]
 num_repeats = 5                           # 每配置重复 5 次，降低随机初始化偶然性的影响
-# 【改进1】迭代次数与配点数联动：配点越多 → 约束越多 → 需要更多训练步数
+# 迭代次数与配点数联动：配点越多 → 约束越多 → 需要更多训练步数
 #         但配点多也意味着每步梯度信息更丰富，不需要线性放大
 #         100→5000步, 500→10000步, 2000→20000步（次线性缩放，兼顾充分训练与总耗时）
 def iterations_for(n_points):
@@ -145,13 +133,13 @@ for n_points in domain_points_list:
         net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot normal")
         model = dde.Model(data, net)
         # 加入学习率逆时衰减：每 2000 步学习率减半，让后期训练更稳定
-        # 【改进2】学习率策略从 "inverse time" 改为 "step"（阶梯衰减）
+        # 学习率策略从 "inverse time" 改为 "step"（阶梯衰减）
         #         inverse time 衰减过快导致后期训练不稳定、发散率高；
         #         step 每 2000 步减半，更可控
         model.compile("adam", lr=1e-3, decay=("step", 2000, 0.5))
 
         start_time = time.time()
-        # 【改进3】接收 train() 返回的 losshistory 用于分析训练是否发散
+        # 接收 train() 返回的 losshistory 用于分析训练是否发散
         #         迭代次数按配点量动态缩放，2000 配点有 15000 步充分训练
         iters = iterations_for(n_points)
         losshistory, train_state = model.train(iterations=iters, display_every=2000)
@@ -166,7 +154,7 @@ for n_points in domain_points_list:
         max_error = np.max(np.abs(y_true - y_pred))
         l2_runs.append(l2_error)
 
-        # 【改进4】从 loss 历史中检测训练是否发散（过拟合/震荡）
+        # 从 loss 历史中检测训练是否发散（过拟合/震荡）
         # losshistory.loss_test 每一行是 [pde_loss, bc_loss, ic_loss]，
         # 用三者的和作为总 loss 来判断最优步数
         test_loss_arr = np.array(losshistory.loss_test)           # shape: (记录次数, 3)
@@ -181,7 +169,7 @@ for n_points in domain_points_list:
         print(f"  本轮 L2={l2_error:.6f}, Max={max_error:.6f}, 耗时={cost_time:.1f}s, "
               f"best@step={best_step}/{final_step} {diverge_flag}")
 
-    # 【改进5】对 L2 Error 做 Grubbs 异常值检验，剔除"跑飞"的坏结果
+    # 对 L2 Error 做 Grubbs 异常值检验，剔除"跑飞"的坏结果
     keep_idx, removed_idx = grubbs_test(np.array(l2_runs))
     l2_clean = [l2_runs[i] for i in keep_idx]
     time_clean = [time_runs[i] for i in keep_idx]
