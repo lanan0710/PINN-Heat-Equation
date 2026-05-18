@@ -21,14 +21,8 @@ dde.config.set_random_seed(seed)
 def pde(x, y):
     # x 是输入张量，包含空间 x 和 时间 t。即 x[:, 0] 是空间，x[:, 1] 是时间。
     # y 是神经网络的输出，即预测的温度 u。
-    
-    # 求解 y 对 t 的一阶偏导数 (u_t)
     dy_t = dde.grad.jacobian(y, x, i=0, j=1) 
-    
-    # 求解 y 对 x 的二阶偏导数 (u_xx)
     dy_xx = dde.grad.hessian(y, x, i=0, j=0) 
-    
-    # 返回偏微分方程的残差 (u_t - 0.4 * u_xx = 0)
     # 当神经网络完美符合物理规律时，这个返回值应该趋近于 0
     alpha = 0.4
     return dy_t - alpha * dy_xx
@@ -68,9 +62,9 @@ ic = dde.icbc.IC(
 # 第四部分：生成训练数据对象
 # ==========================================
 data = dde.data.TimePDE(
-    geomtime,      # 时空域
-    pde,           # 我们前面定义的方程
-    [bc, ic],      # 边界条件和初始条件的列表
+    geomtime,      
+    pde,           
+    [bc, ic],     
     num_domain=2000,    # 在时空域内部随机采样 2000 个点（用来计算 PDE 残差）
     num_boundary=80,   # 在边界上采样 80 个点（用来计算 BC 误差）
     num_initial=80,    # 在 t=0 时刻采样 80 个点（用来计算 IC 误差）
@@ -83,7 +77,7 @@ data = dde.data.TimePDE(
 # 输入层 2 个神经元 (x, t) -> 4 个隐藏层，每层 50 个神经元 -> 输出层 1 个神经元 (u)
 layer_size = [2] + [50] * 4 + [1]
 activation = "tanh"        # 激活函数使用 tanh，因为求导平滑
-initializer = "Glorot normal" # 经典的权重初始化方法
+initializer = "Glorot normal" 
 
 net = dde.nn.FNN(layer_size, activation, initializer)
 
