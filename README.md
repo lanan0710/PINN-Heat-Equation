@@ -4,7 +4,7 @@
 [![DeepXDE](https://img.shields.io/badge/DeepXDE-1.11+-blue.svg?style=flat-square)](https://deepxde.readthedocs.io/)
 [![Status](https://img.shields.io/badge/Status-In%20Progress-orange.svg?style=flat-square)]()
 
-## 📖 项目简介
+##  项目简介
 本项目是基于科学机器学习（SciML）领域的核心算法——**物理信息神经网络（PINNs）**开展的算法实验与交叉研究。项目聚焦于经典的一维热传导方程（1D Heat Equation），通过将偏微分方程（PDEs）、初始条件（IC）和边界条件（BC）作为物理硬约束嵌入神经网络的损失函数中，实现小样本/无监督条件下的高精度物理场演化预测。
 
 本项目不仅实现了基础的 PINN 求解器，还重点构建了包含**传统有限差分法（FDM）**与**纯数据驱动神经网络（纯 NN）**的对比基线，并通过严密的消融实验，量化证明物理约束对模型泛化能力和稳定性的实质性贡献。
